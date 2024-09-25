@@ -54,8 +54,8 @@ app.post("/sign-up", async (req, res, next) => {
     console.log(`About to run query`);
     // await pool.query(testQuery);
     await pool.query("INSERT INTO users (username, password) VALUES ($1, $2)", [
-      "Stan",
-      "Marsh",
+      username,
+      password,
     ]);
     res.redirect("/");
   } catch (err) {
@@ -63,4 +63,4 @@ app.post("/sign-up", async (req, res, next) => {
   }
 });
 
-app.listen(3000, () => console.log("app listening on port 3000!"));
+app.listen(port, () => console.log(`App is listening on port: ${port}`));
