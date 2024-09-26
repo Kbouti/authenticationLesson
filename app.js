@@ -30,7 +30,7 @@ app.use(express.urlencoded({ extended: false }));
 
 app.listen(port, () => console.log(`App is listening on port: ${port}`));
 
-app.get("/", (req, res) => res.render("index"));
+app.get("/", (req, res) => res.render("index", { user: req.user }));
 app.get("/sign-up", (req, res) => res.render("signUpForm"));
 
 app.post("/sign-up", async (req, res, next) => {
