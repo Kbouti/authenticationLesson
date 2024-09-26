@@ -33,6 +33,15 @@ app.listen(port, () => console.log(`App is listening on port: ${port}`));
 app.get("/", (req, res) => res.render("index", { user: req.user }));
 app.get("/sign-up", (req, res) => res.render("signUpForm"));
 
+app.get("/log-out", (req, res, next) => {
+    req.logout((err) => {
+        if (err) {
+          return next(err);
+        }
+        res.redirect("/");
+      });
+});
+
 app.post("/sign-up", async (req, res, next) => {
   console.log(`post route reached`);
   const username = req.body.username;
