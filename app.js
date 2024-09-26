@@ -54,22 +54,17 @@ app.post("/sign-up", async (req, res, next) => {
     if (err) {
       return err;
     } else {
-    
-        try {
-            await pool.query("INSERT INTO users (username, password) VALUES ($1, $2)", [
-              username,
-              hashedPassword,
-            ]);
-            res.redirect("/");
-          } catch (err) {
-            return next(err);
-          }
-
-
+      try {
+        await pool.query(
+          "INSERT INTO users (username, password) VALUES ($1, $2)",
+          [username, hashedPassword]
+        );
+        res.redirect("/");
+      } catch (err) {
+        return next(err);
+      }
     }
   });
-
-
 });
 
 app.post(
@@ -92,7 +87,14 @@ passport.use(
       if (!user) {
         return done(null, false, { message: "Incorrect username" });
       }
-      if (user.password !== password) {
+    //   Without encryption:
+      //   if (user.password !== password) {
+      //     return done(null, false, { message: "Incorrect password" });
+      //   }
+    //   With encryption:
+      const match = await bcrypt.compare(password, user.password);
+      if (!match) {
+        // passwords do not match!
         return done(null, false, { message: "Incorrect password" });
       }
       return done(null, user);
