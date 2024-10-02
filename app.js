@@ -9,18 +9,12 @@ const LocalStrategy = require("passport-local").Strategy;
 
 require("dotenv").config();
 
-let host = process.env.DEV_HOST;
-let user = process.env.DEV_USER;
-let database = process.env.DEV_DATABASE;
-let password = process.env.DEV_PASSWORD;
-let port = process.env.DEV_PORT;
-
 const pool = new Pool({
-  host,
-  user,
-  database,
+  host: process.env.DEV_HOST,
+  user: process.env.DEV_USER,
+  database: process.env.DEV_DATABASE,
+  password: process.env.DEV_PASSWORD,
   port: 5432,
-  //   Hard coding default port for pool. A separate port from .env is used for express app.
 });
 
 const app = express();
@@ -31,9 +25,10 @@ app.use(session({ secret: "cats", resave: false, saveUninitialized: false }));
 app.use(passport.session());
 app.use(express.urlencoded({ extended: false }));
 
-app.listen(port, () => console.log(`App is listening on port: ${port}`));
+app.listen(3000, () => console.log(`App is listening on port: 3000`));
 
 app.get("/", (req, res) => res.render("index", { user: req.user }));
+
 app.get("/sign-up", (req, res) => res.render("signUpForm"));
 
 app.get("/log-out", (req, res, next) => {
@@ -50,7 +45,7 @@ app.post("/sign-up", async (req, res, next) => {
   const username = req.body.username;
   const password = req.body.password;
 
-  bcrypt.hash(req.body.password, 10, async (err, hashedPassword) => {
+  bcrypt.hash(password, 10, async (err, hashedPassword) => {
     if (err) {
       return err;
     } else {
@@ -77,14 +72,15 @@ app.post(
 
 passport.use(
   new LocalStrategy(async (username, password, done) => {
+    console.log(`local strategy triggered`);
     try {
       const { rows } = await pool.query(
         "SELECT * FROM users WHERE username = $1",
         [username]
       );
       const user = rows[0];
-
       if (!user) {
+        console.log(`username does not exist`);
         return done(null, false, { message: "Incorrect username" });
       }
     //   Without encryption:
@@ -94,9 +90,10 @@ passport.use(
     //   With encryption:
       const match = await bcrypt.compare(password, user.password);
       if (!match) {
-        // passwords do not match!
+        console.log(`incorrect password`);
         return done(null, false, { message: "Incorrect password" });
       }
+      console.log(`successfull login`)
       return done(null, user);
     } catch (err) {
       return done(err);
